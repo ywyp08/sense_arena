@@ -1,0 +1,39 @@
+import pandas as pd
+import numpy as np
+
+# Load data
+df = pd.read_excel('../data/sensearena_07-19.xlsx', 'Sheet')
+
+# Create 'User' column and move it to the first place
+df['User'] = df['UserEmail'].str.split('@').str[0]
+cols = ['User'] + [c for c in df.columns if c != 'User']
+df = df[cols]
+
+# Sort the data
+df = df.sort_values(['User','CreatedAt'])
+
+# Modify CreatedAt column to datetime format
+df['CreatedAt'] = pd.to_datetime(
+    df['CreatedAt'],
+    format='ISO8601',
+    utc=True,
+    errors='coerce'
+)
+df['CreatedAt'] = df['CreatedAt'].dt.tz_localize(None)
+
+# Add InSeason/OffSeason column
+df['InSeason'] = (
+    (df['CreatedAt'].dt.month >= 10) |
+    (df['CreatedAt'].dt.month <= 5)
+).astype(int)
+
+# Add DaysGap column that shows number of days from the last practice
+df['DaysGap'] = (
+    df.groupby('UserId')['CreatedAt']
+      .diff()
+      .dt.days
+)
+df['DaysGap'] = df['DaysGap'].replace(0, np.nan)
+
+# Save the new modifications
+df.to_csv('../data/sensearena_data.csv', index=False)
