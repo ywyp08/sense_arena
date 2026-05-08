@@ -9,7 +9,7 @@ df['User'] = df['UserEmail'].str.split('@').str[0]
 cols = ['User'] + [c for c in df.columns if c != 'User']
 df = df[cols]
 
-# Sort the data
+# Sort the data according to time
 df = df.sort_values(['User','CreatedAt'])
 
 # Modify CreatedAt column to datetime format
@@ -35,5 +35,5 @@ df['DaysGap'] = (
 )
 df['DaysGap'] = df['DaysGap'].replace(0, np.nan)
 
-# Save the new modifications
+# Save
 df.to_csv('../data/sensearena_data.csv', index=False)
